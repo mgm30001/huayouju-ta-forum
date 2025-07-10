@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}{{ topic.title }} - 花友居论坛{% endblock %}
+
+{% block content %}
+<div id="image-container" class="bg-white rounded-lg shadow-md p-6">
+    <!-- 主题标题 -->
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">{{ topic.title }}</h1>
+        <div class="text-sm text-gray-500 mt-2">
+            <span>作者: {{ topic.author_name }}</span>
+            <span class="mx-2">|</span>
+            <span>版块: {{ topic.forum_name }}</span>
+            <span class="mx-2">|</span>
+            <span>发布时间: {{ topic.created_at|datetime }}</span>
+            <span class="mx-2">|</span>
+            <span>浏览: {{ topic.views }}</span>
+            <span class="mx-2">|</span>
+            <span>回复: {{ topic.replies }}</span>
+        </div>
+    </div>
+
+    <!-- 主题内容 -->
+    <div class="prose max-w-none mb-8">
+        {{ topic.content | safe }}
+    </div>
+
+    <!-- 回复列表 -->
+    <div class="space-y-6">
+        <h2 class="text-xl font-bold text-gray-800">回复列表</h2>
+        {% for reply in replies %}
+        <div class="border-b border-gray-200 pb-6">
+            <div class="flex justify-between items-start">
+                <div class="flex-1">
+                    <div class="text-sm text-gray-500 mb-2">
+                        <span>作者: {{ reply.author_name }}</span>
+                        <span class="mx-2">|</span>
+                        <span>回复时间: {{ reply.created_at|datetime }}</span>
+                    </div>
+                    <div class="prose max-w-none">
+                        {{ reply.content | safe }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center text-gray-500 py-8">
+            暂无回复
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- 回复表单 -->
+    {% if session.get('user_id') %}
+    <div class="mt-8">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">发表回复</h3>
+        <form action="{{ url_for('reply', topic_id=topic.id) }}" method="post">
+            <input type="hidden" name="image_urls" id="reply_image_urls">
+            <div class="mb-4">
+                <label for="reply_content" class="sr-only">回复内容</label>
+                <textarea name="content" id="reply_content" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" required placeholder="输入您的回复..."></textarea>
+            </div>
+            <div class="mb-4">
+                <label for="reply_image_upload" class="block text-gray-700 font-medium mb-2">上传图片</label>
+                <input type="file" id="reply_image_upload" accept="image/*" multiple class="block w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-green-50 file:text-green-700
+                    hover:file:bg-green-100">
+                <p class="mt-1 text-sm text-gray-500">支持上传多张图片（JPG、PNG、GIF）。图片将上传到图床并自动插入到内容中。</p>
+                <div id="reply_image_previews" class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+            </div>
+            <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
+                提交回复
+            </button>
+        </form>
+    </div>
+    {% else %}
+    <div class="mt-8 text-center">
+        <p class="text-gray-600">请<a href="{{ url_for('login') }}" class="text-green-600 hover:text-green-700">登录</a>后发表回复</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Viewer.js on the main content container
+    const gallery = document.getElementById('image-container');
+    if (gallery) {
+        const viewer = new Viewer(gallery, {
+            url: 'data-src',
+            toolbar: {
+                zoomIn: 4,
+                zoomOut: 4,
+                oneToOne: 4,
+                reset: 4,
+                prev: 4,
+                play: { show: 4, size: 'large' },
+                next: 4,
+                rotateLeft: 4,
+                rotateRight: 4,
+                flipHorizontal: 4,
+                flipVertical: 4,
+            },
+            filter(image) {
+                return image.closest('.prose') !== null;
+            }
+        });
+    }
+
+    // Handle image uploads
+    const imageUploadInput = document.getElementById('reply_image_upload');
+    if (imageUploadInput) {
+        imageUploadInput.addEventListener('change', function(event) {
+            const files = event.target.files;
+            const previewsContainer = document.getElementById('reply_image_previews');
+            const imageUrlsInput = document.getElementById('reply_image_urls');
+            const contentTextarea = document.getElementById('reply_content');
+
+            for (const file of files) {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const previewId = `preview-${Date.now()}-${Math.random()}`;
+                const previewElement = document.createElement('div');
+                previewElement.id = previewId;
+                previewElement.className = 'relative';
+                previewElement.innerHTML = `<div class="w-full h-32 bg-gray-200 rounded-lg flex items-center justify-center">Uploading...</div>`;
+                previewsContainer.appendChild(previewElement);
+
+                fetch('/upload_image', { // Changed URL to proxy endpoint
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200 && data.data.url) {
+                        const imageUrl = data.data.url;
+                        
+                        const uploadedPreview = document.getElementById(previewId);
+                        uploadedPreview.innerHTML = `<img src="${imageUrl}" class="w-full h-32 object-cover rounded-lg">`;
+
+                        const currentUrls = imageUrlsInput.value ? imageUrlsInput.value.split(',') : [];
+                        currentUrls.push(imageUrl);
+                        imageUrlsInput.value = currentUrls.join(',');
+
+                        const currentContent = contentTextarea.value;
+                        const separator = currentContent.trim() === '' ? '' : '\n\n';
+                        contentTextarea.value = currentContent + separator + `![Image](${imageUrl})`;
+                    } else {
+                        const errorPreview = document.getElementById(previewId);
+                        errorPreview.innerHTML = `<div class="w-full h-32 bg-red-100 text-red-700 rounded-lg flex items-center justify-center p-2">Upload Failed</div>`;
+                        console.error('Upload failed:', data.message || 'Unknown error');
+                    }
+                })
+                .catch(error => {
+                    const errorPreview = document.getElementById(previewId);
+                    errorPreview.innerHTML = `<div class="w-full h-32 bg-red-100 text-red-700 rounded-lg flex items-center justify-center p-2">Upload Error</div>`;
+                    console.error('Upload error:', error);
+                });
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

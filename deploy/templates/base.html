@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}花友居论坛{% endblock %}</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <!-- 导航栏 -->
+    <nav class="bg-green-600 text-white shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <a href="{{ url_for('index') }}" class="text-2xl font-bold">花友居论坛</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    {% if session.get('user_id') %}
+                        <span>欢迎，{{ session.get('username') }}</span>
+                        <a href="{{ url_for('logout') }}" class="hover:text-green-200">退出</a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="hover:text-green-200">登录</a>
+                        <a href="{{ url_for('register') }}" class="hover:text-green-200">注册</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <main class="container mx-auto px-4 py-8">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4" role="alert">
+                        <p>{{ message }}</p>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">关于我们</h3>
+                    <p>花友居论坛是一个专注于花卉种植、养护和交流的社区平台。</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">快速链接</h3>
+                    <ul class="space-y-2">
+                        <li><a href="{{ url_for('index') }}" class="hover:text-green-400">首页</a></li>
+                        <li><a href="#" class="hover:text-green-400">帮助中心</a></li>
+                        <li><a href="#" class="hover:text-green-400">联系我们</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">关注我们</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="hover:text-green-400"><i class="fab fa-weixin"></i></a>
+                        <a href="#" class="hover:text-green-400"><i class="fab fa-weibo"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 pt-8 border-t border-gray-700 text-center">
+                <p>&copy; 2024 花友居论坛. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html> 

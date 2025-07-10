@@ -1,0 +1,383 @@
+{
+  "综合区": [
+    {
+      "name": "新手指南",
+      "url": "https://bbs.tahua.net/forum-43-1.html",
+      "description": "你是新手吗？来这里寻找帮助更快上路！",
+      "moderators": [
+        "又见彩虹",
+        "一朵紫云",
+        "墨西哥落羽杉",
+        "懒懒猫猫"
+      ],
+      "topics": "5万",
+      "posts": "100万",
+      "last_post": {
+        "title": "去年冬天的小花",
+        "url": "https://bbs.tahua.net/forum.php?mod=redirect&tid=2652045&goto=lastpost#lastpost"
+      }
+    },
+    {
+      "name": "居家园艺|种花日记",
+      "url": "https://bbs.tahua.net/forum-25-1.html",
+      "description": "一缕阳光，一抹绿意，一片清新。让心灵随绿色沉静，任思绪在花间飞扬。",
+      "moderators": [
+        "空锁满庭花雨",
+        "蓝色闪电",
+        "淡若烟雨",
+        "willhuntingmm",
+        "heather_me"
+      ],
+      "topics": "28万",
+      "posts": "673万",
+      "last_post": {
+        "title": "安吉拉坚强吧！",
+        "url": "https://bbs.tahua.net/forum.php?mod=redirect&tid=2653472&goto=lastpost#lastpost"
+      }
+    },
+    {
+      "name": "种植经验交流",
+      "url": "https://bbs.tahua.net/forum-4-1.html",
+      "description": "梅兰竹菊饰雅居，碧叶青枝添新意。莫道一花无春色，绿染满眼皆情趣。",
+      "moderators": [
+        "企企爸",
+        "时间不够用啊"
+      ],
+      "topics": "13万",
+      "posts": "222万",
+      "last_post": {
+        "title": "小叶昙花",
+        "url": "https://bbs.tahua.net/forum.php?mod=redirect&tid=2653451&goto=lastpost#lastpost"
+      }
+    },
+    {
+      "name": "观赏植物辨识与欣赏",
+      "url": "https://bbs.tahua.net/forum-9-1.html",
+      "description": "笑履网路赏春晴，青衫携酒踏花行。春色满园关不住，一支红杏出墙来。",
+      "moderators": [
+        "千载白衣酒"
+      ],
+      "topics": "17万",
+      "posts": "204万",
+      "last_post": {
+        "title": "兰草",
+        "url": "https://bbs.tahua.net/forum.php?mod=redirect&tid=2653466&goto=lastpost#lastpost"
+      }
+    },
+    {
+      "name": "肥料与病虫害防治",
+      "url": "https://bbs.tahua.net/forum-5-1.html",
+      "description": "花花生病别慌张，花草大夫来帮忙，头疼脑热开处方，营养不良配大餐，虫虫来了消灭光，保你花园现芬芳！",
+      "moderators": [
+        "喝多了",
+        "惜花人",
+        "ahshmj"
+      ],
+      "topics": "6万",
+      "posts": "101万",
+      "last_post": {
+        "title": "五颜六色的颗粒土。。",
+        "url": "https://bbs.tahua.net/forum.php?mod=redirect&tid=2653264&goto=lastpost#lastpost"
+      }
+    }
+  ],
+  "多浆植物讨论区": [],
+  "苦苣苔科植物讨论区": [
+    {
+      "name": "苦苣苔科花卉种植技术交流",
+      "url": "https://bbs.tahua.net/forum-65-1.html",
+      "description": "苦苣苔科植物繁殖与栽培时的疑问、心得分享、及讨论。",
+      "moderators": [
+        "喝多了",
+        "火木",
+        "一盏光阴"
+      ],
+      "topics": "6万",
+      "posts": "135万",
+      "last_post": {
+        "title": "52盆小可爱安全到家！",
+        "url": "https://bbs.tahua.net/forum.php?mod=redirect&tid=2653363&goto=lastpost#lastpost"
+      }
+    },
+    {
+      "name": "苦苣苔科花卉图鉴区",
+      "url": "https://bbs.tahua.net/forum-64-1.html",
+      "description": "苦苣苔科植物求名与品种辨识相关，及具有品种名称的植株开花照图文。",
+      "moderators": [
+        "喝多了",
+        "火木",
+        "一盏光阴"
+      ],
+      "topics": "1万",
+      "posts": "29万",
+      "last_post": {
+        "title": "多变的施华洛世奇水晶",
+        "url": "https://bbs.tahua.net/forum.php?mod=redirect&tid=2653462&goto=lastpost#lastpost"
+      }
+    }
+  ],
+  "专题区": [
+    {
+      "name": "球根植物",
+      "url": "https://bbs.tahua.net/forum-58-1.html",
+      "description": "幻彩缤纷、终年藏于地底的瑰丽宝石...",
+      "moderators": [
+        "蓝色天空",
+        "柠檬绿de猫",
+        "zsx2009",
+        "猫二",
+        "hi奋斗"
+      ],
+      "topics": "17万",
+      "posts": "304万",
+      "last_post": {
+        "title": "今日份赏花",
+        "url": "https://bbs.tahua.net/forum.php?mod=redirect&tid=2653443&goto=lastpost#lastpost"
+      }
+    },
+    {
+      "name": "木本植物",
+      "url": "https://bbs.tahua.net/forum-619-1.html",
+      "description": "它们像花园里的铮铮硬汉，外表未必绚丽华彩，却坚强地站定，成为恒久的守望。",
+      "moderators": [
+        "tiandichun"
+      ],
+      "topics": "9万",
+      "posts": "144万",
+      "last_post": {
+        "title": "蕾丝金露花记录",
+        "url": "https://bbs.tahua.net/forum.php?mod=redirect&tid=2653467&goto=lastpost#lastpost"
+      }
+    },
+    {
+      "name": "兰科植物",
+      "url": "https://bbs.tahua.net/forum-75-1.html",
+      "description": "兰花栽培鉴赏和经验交流",
+      "moderators": [
+        "一盏光阴"
+      ],
+      "topics": "4万",
+      "posts": "64万",
+      "last_post": {
+        "title": "春兰“宋梅”",
+        "url": "https://bbs.tahua.net/forum.php?mod=redirect&tid=2653332&goto=lastpost#lastpost"
+      }
+    },
+    {
+      "name": "野生植物",
+      "url": "https://bbs.tahua.net/forum-62-1.html",
+      "description": "离离原上草，一岁一枯荣。野火烧不尽，春风吹又生。",
+      "moderators": [
+        "duckuly",
+        "小冠花"
+      ],
+      "topics": "1万",
+      "posts": "28万",
+      "last_post": {
+        "title": "野葱",
+        "url": "https://bbs.tahua.net/forum.php?mod=redirect&tid=2652926&goto=lastpost#lastpost"
+      }
+    },
+    {
+      "name": "果菜园",
+      "url": "https://bbs.tahua.net/forum-59-1.html",
+      "description": "有没有时间？来来来，我们一起来用心品尝生活的滋味。。。",
+      "moderators": [
+        "举杯邀月97"
+      ],
+      "topics": "7万",
+      "posts": "200万",
+      "last_post": {
+        "title": "当我买了块菜地～",
+        "url": "https://bbs.tahua.net/forum.php?mod=redirect&tid=2653133&goto=lastpost#lastpost"
+      }
+    },
+    {
+      "name": "药用与香草植物",
+      "url": "https://bbs.tahua.net/forum-60-1.html",
+      "description": "求医不如求己，健康生活，绿色生活，尽可轻轻松松种出来。",
+      "moderators": [
+        "蓝色闪电",
+        "willhuntingmm"
+      ],
+      "topics": "1万",
+      "posts": "24万",
+      "last_post": {
+        "title": "小迷活了",
+        "url": "https://bbs.tahua.net/forum.php?mod=redirect&tid=2650970&goto=lastpost#lastpost"
+      }
+    }
+  ],
+  "专类区": [
+    {
+      "name": "天竺葵",
+      "url": "https://bbs.tahua.net/forum-650-1.html",
+      "moderators": [
+        "客初归"
+      ],
+      "topics": "4万",
+      "posts": "88万",
+      "last_post": {
+        "title": "淋雨的火凤凰",
+        "url": "https://bbs.tahua.net/forum.php?mod=redirect&tid=2653474&goto=lastpost#lastpost"
+      }
+    },
+    {
+      "name": "月季",
+      "url": "https://bbs.tahua.net/forum-657-1.html",
+      "moderators": [
+        "wyatt_wu"
+      ],
+      "topics": "11万",
+      "posts": "187万",
+      "last_post": {
+        "title": "浅夏花墙",
+        "url": "https://bbs.tahua.net/forum.php?mod=redirect&tid=2582259&goto=lastpost#lastpost"
+      }
+    },
+    {
+      "name": "铁线莲",
+      "url": "https://bbs.tahua.net/forum-660-1.html",
+      "moderators": [
+        "huer19"
+      ],
+      "topics": "2万",
+      "posts": "40万",
+      "last_post": {
+        "title": "苹果花长花苞了",
+        "url": "https://bbs.tahua.net/forum.php?mod=redirect&tid=2652728&goto=lastpost#lastpost"
+      }
+    },
+    {
+      "name": "绣球",
+      "url": "https://bbs.tahua.net/forum-670-1.html",
+      "moderators": [
+        "huer19",
+        "米唐"
+      ],
+      "topics": "2万",
+      "posts": "31万",
+      "last_post": {
+        "title": "求助，这个是无尽夏吗",
+        "url": "https://bbs.tahua.net/forum.php?mod=redirect&tid=2653368&goto=lastpost#lastpost"
+      }
+    }
+  ],
+  "分享交换转让区": [
+    {
+      "name": "分享区",
+      "url": "https://bbs.tahua.net/forum-33-1.html",
+      "description": "请把我的花带回你的家，请把你的微笑留下，明天明天这鲜花开遍海角天涯，明天明天这微笑将是遍野春花。\n本版花圣才能发表主题，花仙才能回复主题。",
+      "moderators": [
+        "小胖娃",
+        "米唐",
+        "凯信tw",
+        "甜瓜安在"
+      ],
+      "topics": "18万",
+      "posts": "406万",
+      "last_post": {
+        "title": "重庆快递分享朱顶红物华天宝8份",
+        "url": "https://bbs.tahua.net/forum.php?mod=redirect&tid=2653475&goto=lastpost#lastpost"
+      }
+    },
+    {
+      "name": "交换区",
+      "url": "https://bbs.tahua.net/forum-617-1.html",
+      "description": "分享珍藏，交换快乐，让我们一起收获满园的美丽芬芳。",
+      "moderators": [
+        "小胖娃",
+        "凯信tw"
+      ],
+      "topics": "1万",
+      "posts": "25万",
+      "last_post": {
+        "title": "【广东】新品迷套甜美梦境交换其 ...",
+        "url": "https://bbs.tahua.net/forum.php?mod=redirect&tid=2653455&goto=lastpost#lastpost"
+      }
+    },
+    {
+      "name": "分享&交换&转让反馈",
+      "url": "https://bbs.tahua.net/forum-625-1.html",
+      "moderators": [
+        "小胖娃",
+        "米唐",
+        "李小卡",
+        "甜瓜安在"
+      ],
+      "topics": "2万",
+      "posts": "33万",
+      "last_post": {
+        "title": "分享的朱顶红种子，交作业了",
+        "url": "https://bbs.tahua.net/forum.php?mod=redirect&tid=2649067&goto=lastpost#lastpost"
+      }
+    },
+    {
+      "name": "转让区",
+      "url": "https://bbs.tahua.net/forum-628-1.html",
+      "moderators": [
+        "kaqiduo",
+        "李小卡",
+        "huer19",
+        "米唐",
+        "紫凰花妖"
+      ],
+      "topics": "9万",
+      "posts": "106万",
+      "last_post": {
+        "title": "江苏包邮转让天竺葵苗4组",
+        "url": "https://bbs.tahua.net/forum.php?mod=redirect&tid=2652644&goto=lastpost#lastpost"
+      }
+    },
+    {
+      "name": "闲置交易版",
+      "url": "https://bbs.tahua.net/forum-668-1.html",
+      "moderators": [
+        "李小卡",
+        "huer19",
+        "kaqiduo",
+        "米唐",
+        "紫凰花妖"
+      ],
+      "topics": "4676",
+      "posts": "5万",
+      "last_post": {
+        "title": "四川眉山丑橘不知火丑八怪",
+        "url": "https://bbs.tahua.net/forum.php?mod=redirect&tid=2653215&goto=lastpost#lastpost"
+      }
+    }
+  ],
+  "休闲区": [
+    {
+      "name": "DIY与美食",
+      "url": "https://bbs.tahua.net/forum-664-1.html",
+      "moderators": [
+        "又见彩虹",
+        "小小齐",
+        "芋头A"
+      ],
+      "topics": "2万",
+      "posts": "65万",
+      "last_post": {
+        "title": "满载而归",
+        "url": "https://bbs.tahua.net/forum.php?mod=redirect&tid=2653324&goto=lastpost#lastpost"
+      }
+    },
+    {
+      "name": "休闲娱乐",
+      "url": "https://bbs.tahua.net/forum-44-1.html",
+      "description": "好吃的、好玩的、好看的、好听的…… 原则：远离政治，不谈正事。*^_^*",
+      "moderators": [
+        "又见彩虹",
+        "小小齐",
+        "芸豆xzh"
+      ],
+      "topics": "11万",
+      "posts": "306万",
+      "last_post": {
+        "title": "有些人真的为片钱可以不要脸的",
+        "url": "https://bbs.tahua.net/forum.php?mod=redirect&tid=2653351&goto=lastpost#lastpost"
+      }
+    }
+  ]
+}

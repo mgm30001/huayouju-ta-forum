@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="huayouju-ta">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/mysite.zip!/" />
+      <root url="jar://$PROJECT_DIR$/templates.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
