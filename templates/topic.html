@@ -2,90 +2,372 @@
 
 {% block title %}{{ topic.title }} - 花友居论坛{% endblock %}
 
+{% block description %}{{ topic.content[:150]|striptags }}{% endblock %}
+
+{% block og_title %}{{ topic.title }} - 花友居论坛{% endblock %}
+
+{% block og_description %}{{ topic.content[:150]|striptags }}{% endblock %}
+
+{% block tw_title %}{{ topic.title }} - 花友居论坛{% endblock %}
+
+{% block extra_seo %}
+<!-- 帖子结构化数据：DiscussionForumPosting -->
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "DiscussionForumPosting",
+    "headline": {{ topic.title|tojson }},
+    "author": {"@type": "Person", "name": {{ topic.author_name|tojson }}},
+    "datePublished": {{ topic.created_at|iso8601|tojson }},
+    "dateModified": {{ topic.updated_at|iso8601|tojson }},
+    "articleBody": {{ topic.content[:3000]|tojson }},
+    "interactionStatistic": [
+        {"@type": "InteractionCounter", "interactionType": "https://schema.org/CommentAction", "userInteractionCount": {{ topic.replies }}},
+        {"@type": "InteractionCounter", "interactionType": "https://schema.org/ViewAction", "userInteractionCount": {{ topic.views }}}
+    ],
+    "url": {{ request.url|tojson }},
+    "mainEntityOfPage": {{ request.url|tojson }}
+}
+</script>
+{% endblock %}
+
 {% block content %}
-<div id="image-container" class="bg-white rounded-lg shadow-md p-6">
+<style>
+.x-wrap { max-width: 1100px; margin: 0 auto; }
+/* 帖子头部：标题下横线分隔 */
+.x-topic-header { border-bottom: 2px solid var(--lcz-border); padding-bottom: 16px; }
+/* 回复行：头像+内容 左对齐排版（lcz帖子流式） */
+.x-reply-row { display: flex; gap: 12px; padding: 14px 4px; border-bottom: 1px solid var(--lcz-border); }
+.x-reply-row:last-child { border-bottom: none; }
+.x-reply-avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    font-weight: 600; color: #fff; font-size: .95rem;
+}
+.x-reply-body { flex: 1; min-width: 0; }
+.x-reply-head { font-size: .8125rem; color: var(--lcz-text-secondary); margin-bottom: 6px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.x-reply-floor { margin-left: auto; }
+</style>
+
+<div class="x-wrap">
+    <!-- 面包屑 -->
+    <nav class="text-sm mb-4" style="color:var(--lcz-text-secondary)">
+        <a href="{{ url_for('index') }}" class="apple-link">首页</a>
+        <span class="mx-2">/</span>
+        <a href="{{ url_for('forum', forum_id=topic.forum_id) }}" class="apple-link">{{ topic.forum_name }}</a>
+        <span class="mx-2">/</span>
+        <span class="truncate max-w-[240px] inline-block align-bottom" style="color:var(--lcz-text)">{{ topic.title }}</span>
+    </nav>
+
+<div id="image-container" class="apple-card p-5 md:p-7">
+
     <!-- 主题标题 -->
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">{{ topic.title }}</h1>
-        <div class="text-sm text-gray-500 mt-2">
-            <span>作者: {{ topic.author_name }}</span>
-            <span class="mx-2">|</span>
-            <span>版块: {{ topic.forum_name }}</span>
-            <span class="mx-2">|</span>
-            <span>发布时间: {{ topic.created_at|datetime }}</span>
-            <span class="mx-2">|</span>
-            <span>浏览: {{ topic.views }}</span>
-            <span class="mx-2">|</span>
-            <span>回复: {{ topic.replies }}</span>
+    <div class="mb-8">
+        <div class="flex justify-between items-start flex-wrap gap-3">
+            <div class="flex-1 min-w-0">
+                <h1 class="text-2xl md:text-3xl font-bold text-white break-words tracking-tight">{{ topic.title }}</h1>
+                <div class="text-sm text-gray-500 mt-2 flex flex-wrap gap-x-2 gap-y-1">
+                    <a href="{{ url_for('user_profile', user_id=topic.user_id) }}" class="text-gray-300 hover:text-blue-600 font-medium">{{ topic.author_name }}</a>
+                    {% set cb = credit_badge(topic.user_id) %}<span title="信用分 {{ cb.score }}" style="font-size:.75rem;color:var(--lcz-text-secondary)">{{ cb.emoji }} {{ cb.level }}({{ cb.score }})</span>
+                    <span class="mx-2">|</span>
+                    <span>版块: {{ topic.forum_name }}</span>
+                    <span class="mx-2">|</span>
+                    <span>发布时间: {{ topic.created_at|datetime }}</span>
+                    <span class="mx-2">|</span>
+                    <span>浏览: {{ topic.views }}</span>
+                    <span class="mx-2">|</span>
+                    <span>回复: {{ topic.replies }}</span>
+                </div>
+            </div>
+            {% if session.get('user_id') == topic.user_id %}
+            <div class="flex items-center space-x-3 shrink-0">
+                <a href="{{ url_for('edit_topic', topic_id=topic.id) }}" class="apple-btn-secondary text-sm">
+                    <i class="fas fa-edit"></i> 编辑
+                </a>
+                <form action="{{ url_for('delete_topic', topic_id=topic.id) }}" method="post" class="inline"
+                      onsubmit="return confirm('确定删除这篇帖子吗？回复也会一起删除。')">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <button type="submit" class="text-red-500 hover:text-red-700 text-sm font-medium">
+                        <i class="fas fa-trash"></i> 删除
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+        <!-- 点赞/收藏操作栏 -->
+        <div class="flex items-center space-x-4 mt-4 pt-4 apple-divider">
+            <button id="like-btn" onclick="toggleLike({{ topic.id }})"
+                class="flex items-center space-x-1.5 text-sm px-4 py-1.5 rounded-full transition {% if user_liked %}bg-red-50 text-red-500{% else %}bg-gray-800 text-gray-600 hover:bg-gray-200{% endif %}">
+                <i class="fas {% if user_liked %}fa-heart{% else %}fa-heart{% endif %}"></i>
+                <span id="like-count">{{ like_count }}</span>
+                <span class="hidden sm:inline">赞</span>
+            </button>
+            <button id="fav-btn" onclick="toggleFavorite({{ topic.id }})"
+                class="flex items-center space-x-1.5 text-sm px-4 py-1.5 rounded-full transition {% if user_favorited %}bg-yellow-50 text-yellow-600{% else %}bg-gray-800 text-gray-600 hover:bg-gray-200{% endif %}">
+                <i class="fas {% if user_favorited %}fa-star{% else %}fa-star{% endif %}"></i>
+                <span class="hidden sm:inline">{% if user_favorited %}已收藏{% else %}收藏{% endif %}</span>
+            </button>
         </div>
     </div>
 
     <!-- 主题内容 -->
-    <div class="prose max-w-none mb-8">
+    <div class="prose max-w-none mb-10">
         {{ topic.content | safe }}
     </div>
-
     <!-- 回复列表 -->
-    <div class="space-y-6">
-        <h2 class="text-xl font-bold text-gray-800">回复列表</h2>
+    <div class="x-section-title" style="margin-top:28px">💬 回复列表（{{ topic.replies }}）</div>
+    <div class="apple-card" style="padding: 4px 16px;">
         {% for reply in replies %}
-        <div class="border-b border-gray-200 pb-6">
-            <div class="flex justify-between items-start">
-                <div class="flex-1">
-                    <div class="text-sm text-gray-500 mb-2">
-                        <span>作者: {{ reply.author_name }}</span>
-                        <span class="mx-2">|</span>
-                        <span>回复时间: {{ reply.created_at|datetime }}</span>
-                    </div>
-                    <div class="prose max-w-none">
-                        {{ reply.content | safe }}
-                    </div>
+        <div class="x-reply-row" id="reply-{{ reply.id }}">
+            <a href="{{ url_for('user_profile', user_id=reply.user_id) }}" class="x-reply-avatar" style="background: hsl({{ reply.user_id * 63 % 360 }}, 45%, 42%); text-decoration:none;">{{ reply.author_name[0]|upper }}</a>
+            <div class="x-reply-body">
+                <div class="x-reply-head">
+                    <a href="{{ url_for('user_profile', user_id=reply.user_id) }}" class="font-medium" style="color:var(--lcz-primary); text-decoration:none;">{{ reply.author_name }}</a>
+                    <span>{{ reply.created_at|datetime }}</span>
+                    {% if session.get('user_id') %}
+                    <button type="button" class="apple-link bg-transparent border-0 p-0 cursor-pointer" style="font-size:.8125rem" onclick="insertMention('{{ reply.author_name | e }}')">↩ 回复</button>
+                    <span class="x-reply-floor">#{{ loop.index }}</span>
+                    {% endif %}
                 </div>
+                <div class="prose max-w-none break-words" id="reply-content-{{ reply.id }}">
+                    {{ reply.content | safe }}
+                </div>
+                {% if session.get('user_id') == reply.user_id %}
+                <div class="flex items-center space-x-3 mt-2">
+                    <button type="button" class="apple-link bg-transparent border-0 p-0 cursor-pointer text-sm" onclick="editReply({{ reply.id }})">
+                        <i class="fas fa-edit"></i> 编辑
+                    </button>
+                    <form action="{{ url_for('delete_reply', reply_id=reply.id) }}" method="post" class="inline"
+                          onsubmit="return confirm('确定删除这条回复吗？')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <button type="submit" class="text-sm font-medium" style="color:var(--lcz-danger); background:none; border:none; cursor:pointer;">
+                            <i class="fas fa-trash"></i> 删除
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
             </div>
         </div>
         {% else %}
-        <div class="text-center text-gray-500 py-8">
+        <div class="text-center py-8" style="color:var(--lcz-text-secondary)">
             暂无回复
         </div>
         {% endfor %}
     </div>
 
+    <!-- 交换记录（交换区帖子才显示） -->
+    {% if trades or (session.get('user_id') and topic.forum_id == 32) %}
+    <div class="mt-10 pt-8 apple-divider">
+        <div class="x-section-title" style="margin-bottom:16px">🔄 本帖交换记录（{{ trades|length }}）</div>
+        {% if session.get('user_id') %}
+        <div class="mb-4">
+            {% if session.get('user_id') == topic.user_id %}
+            <div class="text-xs" style="color:var(--lcz-text-secondary)">有人想和你交换时，会在这里出现一条记录，双方各自点「确认收货」后完成并自动记信用分。</div>
+            {% elif not trades %}
+            <button onclick="tradeStart()" class="apple-btn" style="padding:6px 16px;font-size:.8125rem">🤝 和帖主发起交换</button>
+            <span class="text-xs ml-2" style="color:var(--lcz-text-secondary)">先在回复里谈好换什么，再点这里建立记录</span>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% for t in trades %}
+        <div class="apple-card p-4 mb-3" style="border:1px solid var(--lcz-border)">
+            <div class="flex justify-between items-center flex-wrap gap-2">
+                <div class="text-sm" style="color:var(--lcz-text)">
+                    <a href="{{ url_for('user_profile', user_id=t.user_a) }}" style="color:var(--lcz-primary);text-decoration:none">{{ t.name_a }}</a>
+                    <span style="color:var(--lcz-text-secondary)"> ⇄ </span>
+                    <a href="{{ url_for('user_profile', user_id=t.user_b) }}" style="color:var(--lcz-primary);text-decoration:none">{{ t.name_b }}</a>
+                    <span class="ml-2 text-xs px-2 py-0.5 rounded-full" style="background:{% if t.status == 1 %}rgba(52,199,89,.15);color:#34c759{% else %}rgba(255,159,10,.15);color:#ff9f0a{% endif %}">
+                        {% if t.status == 1 %}已完成{% else %}进行中{% endif %}
+                    </span>
+                </div>
+            </div>
+            {% if t.i_am_in and t.status == 0 %}
+            <div class="mt-3 flex flex-wrap gap-2 items-center">
+                {% if not t.my_confirmed %}
+                <button onclick="tradeConfirm({{ t.id }})" class="apple-btn" style="padding:6px 16px;font-size:.8125rem">✅ 确认收货</button>
+                {% else %}
+                <span class="text-xs" style="color:#34c759">✓ 我已确认，等对方确认</span>
+                {% endif %}
+                {% if t.other_confirmed %}<span class="text-xs" style="color:#ff9f0a">对方已确认</span>{% endif %}
+                {% if t.my_confirmed and not t.i_reviewed %}
+                <button onclick="tradeReviewShow({{ t.id }})" class="apple-btn-secondary" style="padding:6px 16px;font-size:.8125rem">评价对方</button>
+                {% elif t.i_reviewed %}
+                <span class="text-xs" style="color:var(--lcz-text-secondary)">已评价</span>
+                {% endif %}
+            </div>
+            {% elif t.status == 1 %}
+            <div class="mt-2 text-xs" style="color:var(--lcz-text-secondary)">双方确认完成，信用分已自动 +1</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <!-- 回复表单 -->
     {% if session.get('user_id') %}
-    <div class="mt-8">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">发表回复</h3>
+    <div class="mt-10 pt-8 apple-divider">
+        <h3 class="text-lg font-semibold text-white mb-4">发表回复</h3>
         <form action="{{ url_for('reply', topic_id=topic.id) }}" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
             <input type="hidden" name="image_urls" id="reply_image_urls">
             <div class="mb-4">
-                <label for="reply_content" class="sr-only">回复内容</label>
-                <textarea name="content" id="reply_content" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" required placeholder="输入您的回复..."></textarea>
+                <textarea name="content" id="reply_content" rows="4" class="apple-textarea" required placeholder="输入您的回复... 用 @用户名 可以提及别人，对方会收到通知"></textarea>
             </div>
+            <script>
+            function insertMention(name) {
+                const ta = document.getElementById('reply_content');
+                const tag = '@' + name + ' ';
+                // 光标处插入，或追加到末尾
+                if (ta.selectionStart !== undefined) {
+                    const start = ta.selectionStart, end = ta.selectionEnd;
+                    ta.value = ta.value.slice(0, start) + tag + ta.value.slice(end);
+                    ta.selectionStart = ta.selectionEnd = start + tag.length;
+                } else {
+                    ta.value += tag;
+                }
+                ta.focus();
+                ta.scrollIntoView({behavior: 'smooth', block: 'center'});
+            }
+            </script>
             <div class="mb-4">
-                <label for="reply_image_upload" class="block text-gray-700 font-medium mb-2">上传图片</label>
-                <input type="file" id="reply_image_upload" accept="image/*" multiple class="block w-full text-sm text-gray-500
-                    file:mr-4 file:py-2 file:px-4
-                    file:rounded-full file:border-0
-                    file:text-sm file:font-semibold
-                    file:bg-green-50 file:text-green-700
-                    hover:file:bg-green-100">
-                <p class="mt-1 text-sm text-gray-500">支持上传多张图片（JPG、PNG、GIF）。图片将上传到图床并自动插入到内容中。</p>
+                <label for="reply_image_upload" class="block text-gray-300 font-medium mb-2 text-sm">上传图片</label>
+                <input type="file" id="reply_image_upload" accept="image/*" multiple class="block w-full text-sm text-gray-500">
+                <p class="mt-1 text-sm text-gray-500">支持 JPG / PNG / GIF / WEBP，单张最大 16MB，可多张同时上传。上传成功后自动插入到内容中。</p>
                 <div id="reply_image_previews" class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4"></div>
             </div>
-            <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
+            <button type="submit" id="reply_submit_btn" class="apple-btn">
                 提交回复
             </button>
+            <script>
+            // 上传中禁用提交按钮，全部完成后恢复
+            window.uploadingCount = 0;
+            const submitBtn = document.getElementById('reply_submit_btn');
+            function updateSubmitState() {
+                if (uploadingCount > 0) {
+                    submitBtn.disabled = true;
+                    submitBtn.style.opacity = '0.5';
+                    submitBtn.style.cursor = 'not-allowed';
+                    submitBtn.textContent = `⏳ 图片上传中（${uploadingCount}）…`;
+                } else {
+                    submitBtn.disabled = false;
+                    submitBtn.style.opacity = '1';
+                    submitBtn.style.cursor = 'pointer';
+                    submitBtn.textContent = '提交回复';
+                }
+            }
+            // 表单提交拦截：上传中不允许提交
+            document.querySelector('form[action*="reply"]').addEventListener('submit', function(e) {
+                if (window.uploadingCount > 0) {
+                    e.preventDefault();
+                    alert(`还有 ${window.uploadingCount} 张图片正在上传，请稍等…`);
+                }
+            });
+            </script>
         </form>
     </div>
     {% else %}
-    <div class="mt-8 text-center">
-        <p class="text-gray-600">请<a href="{{ url_for('login') }}" class="text-green-600 hover:text-green-700">登录</a>后发表回复</p>
+    <div class="mt-10 text-center">
+        <p class="text-gray-600">请<a href="{{ url_for('login') }}" class="apple-link">登录</a>后发表回复</p>
     </div>
     {% endif %}
+</div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
+function toggleLike(topicId) {
+    const fd = new FormData();
+    fd.append('csrf_token', '{{ csrf_token }}');
+    fetch('/like/' + topicId, { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(d => {
+            if (d.code === 401) { alert('请先登录'); return; }
+            const btn = document.getElementById('like-btn');
+            const count = document.getElementById('like-count');
+            count.textContent = d.count;
+            if (d.liked) {
+                btn.className = 'flex items-center space-x-1.5 text-sm px-4 py-1.5 rounded-full transition bg-red-50 text-red-500';
+            } else {
+                btn.className = 'flex items-center space-x-1.5 text-sm px-4 py-1.5 rounded-full transition bg-gray-800 text-gray-600 hover:bg-gray-200';
+            }
+        })
+        .catch(e => console.error(e));
+}
+
+function toggleFavorite(topicId) {
+    const fd = new FormData();
+    fd.append('csrf_token', '{{ csrf_token }}');
+    fetch('/favorite/' + topicId, { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(d => {
+            if (d.code === 401) { alert('请先登录'); return; }
+            const btn = document.getElementById('fav-btn');
+            const label = btn.querySelector('span:not(.hidden)');
+            if (d.favorited) {
+                btn.className = 'flex items-center space-x-1.5 text-sm px-4 py-1.5 rounded-full transition bg-yellow-50 text-yellow-600';
+                if (label) label.textContent = '已收藏';
+            } else {
+                btn.className = 'flex items-center space-x-1.5 text-sm px-4 py-1.5 rounded-full transition bg-gray-800 text-gray-600 hover:bg-gray-200';
+                if (label) label.textContent = '收藏';
+            }
+        })
+        .catch(e => console.error(e));
+}
+
+function editReply(replyId) {
+    const contentDiv = document.getElementById('reply-content-' + replyId);
+    if (!contentDiv) return;
+    const originalText = contentDiv.textContent.trim();
+    const wrapper = document.createElement('div');
+    wrapper.className = 'mt-2';
+    wrapper.innerHTML = `
+        <textarea id="edit-textarea-${replyId}" rows="4" class="apple-textarea">${escapeHtml(originalText)}</textarea>
+        <div class="mt-2 space-x-2">
+            <button onclick="saveReply(${replyId})" class="apple-btn text-sm">保存</button>
+            <button onclick="cancelEdit(${replyId})" class="apple-btn-secondary text-sm">取消</button>
+        </div>
+    `;
+    contentDiv.innerHTML = '';
+    contentDiv.appendChild(wrapper);
+}
+
+function saveReply(replyId) {
+    const textarea = document.getElementById('edit-textarea-' + replyId);
+    if (!textarea) return;
+    const content = textarea.value.trim();
+    if (!content) { alert('内容不能为空'); return; }
+    const formData = new FormData();
+    formData.append('content', content);
+    formData.append('csrf_token', '{{ csrf_token }}');
+    fetch('/edit_reply/' + replyId, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.code === 200) {
+            alert('回复已更新');
+            location.reload();
+        } else {
+            alert(data.message || '更新失败');
+        }
+    })
+    .catch(error => {
+        alert('更新出错: ' + error);
+    });
+}
+
+function cancelEdit(replyId) {
+    location.reload();
+}
+
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize Viewer.js on the main content container
     const gallery = document.getElementById('image-container');
@@ -121,49 +403,148 @@ document.addEventListener('DOMContentLoaded', function() {
             const contentTextarea = document.getElementById('reply_content');
 
             for (const file of files) {
-                const formData = new FormData();
-                formData.append('file', file);
+                uploadSingleFile(file, previewsContainer, imageUrlsInput, contentTextarea);
+            }
+        });
 
-                const previewId = `preview-${Date.now()}-${Math.random()}`;
-                const previewElement = document.createElement('div');
-                previewElement.id = previewId;
-                previewElement.className = 'relative';
-                previewElement.innerHTML = `<div class="w-full h-32 bg-gray-200 rounded-lg flex items-center justify-center">Uploading...</div>`;
-                previewsContainer.appendChild(previewElement);
+        // ── 粘贴图片上传：Ctrl+V 截图直传 ──
+        const contentTextarea = document.getElementById('reply_content');
+        if (contentTextarea) {
+            contentTextarea.addEventListener('paste', function(event) {
+                const items = (event.clipboardData || window.clipboardData).items;
+                let found = false;
+                for (const item of items) {
+                    if (item.type.indexOf('image') === 0) {
+                        found = true;
+                        const blob = item.getAsFile();
+                        // 粘贴的截图没有文件名，补一个
+                        const ext = (blob.type.split('/')[1] || 'png').replace('jpeg', 'jpg');
+                        const file = new File([blob], `paste-${Date.now()}.${ext}`, {type: blob.type});
+                        uploadSingleFile(file,
+                            document.getElementById('reply_image_previews'),
+                            imageUrlsInput,
+                            contentTextarea);
+                    }
+                }
+                if (found) event.preventDefault(); // 阻止把图片base64塞进文本框
+            });
+        }
 
-                fetch('/upload_image', { // Changed URL to proxy endpoint
-                    method: 'POST',
-                    body: formData
-                })
+        // 光标位置插入文本（粘贴上传用，不打断打字）
+        window.insertAtCursor = function(textarea, text) {
+            if (textarea.selectionStart !== undefined) {
+                const start = textarea.selectionStart, end = textarea.selectionEnd;
+                textarea.value = textarea.value.slice(0, start) + text + textarea.value.slice(end);
+                textarea.selectionStart = textarea.selectionEnd = start + text.length;
+            } else {
+                textarea.value += text;
+            }
+        };
+
+        function uploadSingleFile(file, previewsContainer, imageUrlsInput, contentTextarea) {
+            // 计数+1，禁用提交按钮
+            window.uploadingCount = (window.uploadingCount || 0) + 1;
+            if (typeof updateSubmitState === 'function') updateSubmitState();
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('csrf_token', '{{ csrf_token }}');
+
+            const previewId = `preview-${Date.now()}-${Math.random()}`;
+            const previewElement = document.createElement('div');
+            previewElement.id = previewId;
+            previewElement.className = 'relative';
+            const sizeMb = (file.size / 1024 / 1024).toFixed(1);
+            previewElement.innerHTML = `<div class="w-full h-32 text-blue-700 rounded-xl flex flex-col items-center justify-center p-2 text-sm"><span class="animate-pulse">⏳ 正在上传…</span><span class="text-xs mt-1 text-gray-500">${file.name}（${sizeMb}MB）</span></div>`;
+            previewsContainer.appendChild(previewElement);
+
+            fetch('/upload_image', {
+                method: 'POST',
+                body: formData
+            })
                 .then(response => response.json())
                 .then(data => {
+                    window.uploadingCount = Math.max(0, (window.uploadingCount || 0) - 1);
+                    if (typeof updateSubmitState === 'function') updateSubmitState();
+
                     if (data.code === 200 && data.data.url) {
                         const imageUrl = data.data.url;
-                        
                         const uploadedPreview = document.getElementById(previewId);
-                        uploadedPreview.innerHTML = `<img src="${imageUrl}" class="w-full h-32 object-cover rounded-lg">`;
+                        uploadedPreview.innerHTML = `<img src="${imageUrl}" class="w-full h-32 object-cover rounded-xl">`;
 
                         const currentUrls = imageUrlsInput.value ? imageUrlsInput.value.split(',') : [];
                         currentUrls.push(imageUrl);
                         imageUrlsInput.value = currentUrls.join(',');
 
-                        const currentContent = contentTextarea.value;
-                        const separator = currentContent.trim() === '' ? '' : '\n\n';
-                        contentTextarea.value = currentContent + separator + `![Image](${imageUrl})`;
+                        // 在光标处插入图片Markdown（不打断打字）
+                        window.insertAtCursor(contentTextarea, `![Image](${imageUrl})\n`);
                     } else {
                         const errorPreview = document.getElementById(previewId);
-                        errorPreview.innerHTML = `<div class="w-full h-32 bg-red-100 text-red-700 rounded-lg flex items-center justify-center p-2">Upload Failed</div>`;
+                        const reason = (data.message && data.message !== 'Unknown error') ? data.message : '未知原因';
+                        errorPreview.innerHTML = `<div class="w-full h-32 bg-red-50 text-red-700 rounded-xl flex flex-col items-center justify-center p-2 text-sm"><span class="font-medium">❌ 上传失败</span><span class="text-xs mt-1 text-center leading-snug">${reason}</span></div>`;
                         console.error('Upload failed:', data.message || 'Unknown error');
                     }
                 })
                 .catch(error => {
+                    window.uploadingCount = Math.max(0, (window.uploadingCount || 0) - 1);
+                    if (typeof updateSubmitState === 'function') updateSubmitState();
+
                     const errorPreview = document.getElementById(previewId);
-                    errorPreview.innerHTML = `<div class="w-full h-32 bg-red-100 text-red-700 rounded-lg flex items-center justify-center p-2">Upload Error</div>`;
+                    errorPreview.innerHTML = `<div class="w-full h-32 bg-red-50 text-red-700 rounded-xl flex flex-col items-center justify-center p-2 text-sm"><span class="font-medium">🌐 网络错误</span><span class="text-xs mt-1 text-center">连接服务器失败，请检查网络后重试</span></div>`;
                     console.error('Upload error:', error);
                 });
-            }
-        });
+        }
     }
 });
+
+// ============ 交换区信用体系 JS ============
+function tradePost(url, data, onDone) {
+    const fd = new FormData();
+    fd.append('csrf_token', '{{ csrf_token }}');
+    for (const k in data) fd.append(k, data[k]);
+    fetch(url, { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(d => { alert(d.message || (d.code === 200 ? '操作成功' : '操作失败')); if (d.code === 200) location.reload(); })
+        .catch(() => alert('网络错误，请重试'));
+}
+
+function tradeStart() {
+    tradePost('/trade/start/{{ topic.id }}', {});
+}
+
+function tradeConfirm(tradeId) {
+    if (!confirm('确认已收到对方的苗/物品？双方都确认后本次交换完成，信用 +1。')) return;
+    tradePost('/trade/confirm/' + tradeId, {});
+}
+
+function tradeReviewShow(tradeId) {
+    const html = `<div style="text-align:left;font-size:.875rem">
+        <p style="margin-bottom:8px">评价对方在本次交换中的表现：</p>
+        <label style="display:block;margin:6px 0"><input type="radio" name="tr" value="good" checked> 👍 好评（对方信用 +1）</label>
+        <label style="display:block;margin:6px 0"><input type="radio" name="tr" value="commend"> ⭐ 点名表扬：发货快/包装好（对方再 +1）</label>
+        <textarea id="tr_comment" rows="2" placeholder="想说的话（可选）" style="width:100%;margin-top:6px;padding:8px;border-radius:8px;border:1px solid #ccc"></textarea>
+    </div>`;
+    // 复用浏览器的弹窗太弱，这里用简易浮层
+    let overlay = document.getElementById('tradeReviewOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'tradeReviewOverlay';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center';
+        document.body.appendChild(overlay);
+    }
+    overlay.innerHTML = `<div class="apple-card" style="max-width:420px;width:92%;padding:20px">
+        <h3 style="font-weight:600;margin-bottom:12px">评价交换</h3>${html}
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
+            <button onclick="document.getElementById('tradeReviewOverlay').style.display='none'" class="apple-btn-secondary" style="padding:8px 18px">取消</button>
+            <button onclick="tradeReviewSubmit(${tradeId})" class="apple-btn" style="padding:8px 18px">提交评价</button>
+        </div></div>`;
+    overlay.style.display = 'flex';
+}
+
+function tradeReviewSubmit(tradeId) {
+    const rating = document.querySelector('input[name="tr"]:checked').value;
+    const comment = document.getElementById('tr_comment') ? document.getElementById('tr_comment').value : '';
+    tradePost('/trade/review/' + tradeId, { rating: rating, comment: comment });
+}
 </script>
 {% endblock %}

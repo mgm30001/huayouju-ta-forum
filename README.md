@@ -124,23 +124,27 @@ huayouju-ta/
 
 1. 服务器上 `web_app.py` 与 `ai_access.py` 两个文件都替换为本仓库版本
    （`ai_access.py` 放到与 `web_app.py` 同目录）。
-2. 重启服务（如 `systemctl restart huayouju`）。
-3. 验证：`/llms.txt`、`/llms-full.txt`、`/api/forums`、`/openapi.json`、
-   `/forum/1/rss`、`/topic/1.md` 均应返回 200；`/rss` 的 pubDate 应为 RFC 822 格式。
+2. 把 `templates/topic.html` 同步到服务器（JSON-LD 的 `datePublished` 已改为 ISO 8601）。
+3. 重启服务（如 `systemctl restart huayouju`）。
+4. 验证：`/llms.txt`、`/llms-full.txt`、`/api/forums`、`/openapi.json`、
+   `/forum/1/rss`、`/topic/1.md` 均应返回 200；`/rss` 的 pubDate 应为 RFC 822 格式；
+   主题页 JSON-LD 的 `datePublished` 应为 `2026-09-08T12:20:34+08:00` 这种 ISO 8601 格式。
+
+> 注意：仓库里的 `forum.db` 是**样本数据**（38 个主题，供本地开发测试），
+> 生产数据库在服务器上，请勿把生产库提交到本仓库。
+> 线上代码/数据库的每日备份在私有仓库 `moome-infra-backup`。
 
 可用环境变量（可选）：`HUA_DB_PATH`（SQLite 路径，默认 `forum.db`）、
 `HUA_BASE_URL`（默认 `https://hua.moome.eu.org`）、
 `HUA_TZ_OFFSET`（RSS 时区偏移，默认 `+0800`）。
 
-### 剩余待改（在模板里，非 web_app.py）
+### 已完成（含模板修改）
 
-- **`topic.html` 中 JSON-LD 的 `datePublished`**：当前输出原始字符串
-  （如 `2026-09-08 12:20:34.057546`），不是 ISO 8601。`web_app.py` 已提供
-  `iso8601` 模板过滤器，把模板里 `"datePublished": "{{ topic.created_at }}"`
-  改成 `"datePublished": "{{ topic.created_at|iso8601 }}"` 即可
-  （输出 `2026-09-08T12:20:34+08:00`）。`dateModified` 同理。
-- 建议给 `DiscussionForumPosting` 补上 `commentCount`（= 回复数）与
-  `discussionUrl`（= 主题 URL）字段。
+- **`topic.html` 中 JSON-LD 的 `datePublished`** 已改为 ISO 8601
+  （`{{ topic.created_at|iso8601|tojson }}`，输出 `2026-09-08T12:20:34+08:00`），
+  并补了 `dateModified`。`commentCount`/`views` 已由 `interactionStatistic`
+  覆盖，`discussionUrl` 已由 `url`/`mainEntityOfPage` 覆盖，无需再加。
+- `templates/` 已同步线上完整模板集（19 个），`wsgi.py` 为 gunicorn 入口。
 
 ## 许可证
 

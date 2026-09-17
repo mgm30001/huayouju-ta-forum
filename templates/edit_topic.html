@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}编辑帖子 - 花友居论坛{% endblock %}
+
+{% block content %}
+<div class="apple-card p-6 md:p-8 max-w-3xl mx-auto">
+    <h1 class="text-2xl font-semibold text-white mb-8">编辑帖子</h1>
+
+    <form action="{{ url_for('edit_topic', topic_id=topic.id) }}" method="post" class="space-y-5">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <div>
+            <label for="title" class="block text-sm font-medium text-gray-300 mb-1.5">标题</label>
+            <input type="text" name="title" id="title" value="{{ topic.title }}" class="apple-input" required>
+        </div>
+        <div>
+            <label for="content" class="block text-sm font-medium text-gray-300 mb-1.5">内容（支持 Markdown）</label>
+            <textarea name="content" id="content" rows="14" class="apple-textarea font-mono text-sm" required>{{ topic.content }}</textarea>
+        </div>
+        <div class="flex items-center space-x-3">
+            <button type="submit" class="apple-btn">保存修改</button>
+            <a href="{{ url_for('topic', topic_id=topic.id) }}" class="apple-btn-secondary">取消</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

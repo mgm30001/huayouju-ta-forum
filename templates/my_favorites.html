@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}我的收藏 - 花友居论坛{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-2xl font-semibold text-white mb-6">我的收藏</h1>
+
+    {% if topics %}
+    <div class="apple-card overflow-hidden divide-y divide-gray-100">
+        {% for t in topics %}
+        <a href="{{ url_for('topic', topic_id=t.id) }}" class="block px-6 py-4 hover:bg-black transition">
+            <h3 class="text-base font-medium text-white break-words">{{ t.title }}</h3>
+            <div class="text-xs text-gray-500 mt-1.5 flex flex-wrap gap-x-3 gap-y-1">
+                <span class="text-blue-600">{{ t.forum_name }}</span>
+                <span>{{ t.author_name }}</span>
+                <span>{{ t.created_at|datetime }}</span>
+                <span>{{ t.views }} 浏览</span>
+                <span>{{ t.replies }} 回复</span>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+
+    {% if pages > 1 %}
+    <div class="flex justify-center items-center space-x-4 mt-8">
+        {% if page > 1 %}
+        <a href="{{ url_for('my_favorites', page=page-1) }}" class="apple-btn-secondary text-sm">上一页</a>
+        {% endif %}
+        <span class="text-sm text-gray-500">第 {{ page }} / {{ pages }} 页</span>
+        {% if page < pages %}
+        <a href="{{ url_for('my_favorites', page=page+1) }}" class="apple-btn-secondary text-sm">下一页</a>
+        {% endif %}
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="apple-card p-10 text-center text-gray-500">
+        <i class="far fa-star text-3xl mb-3 text-gray-300"></i>
+        <p>还没有收藏任何帖子</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

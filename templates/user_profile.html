@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.username }} 的主页 - 花友居论坛{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- 用户资料卡片 -->
+    <div class="apple-card p-8 mb-6">
+        <div class="flex items-center gap-6 flex-wrap">
+            {% if user.avatar %}
+            <img src="{{ user.avatar }}" class="w-20 h-20 rounded-full object-cover border-2 border-gray-700" alt="头像">
+            {% else %}
+            <div class="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center text-3xl font-semibold text-blue-600 border-2 border-gray-700">
+                {{ user.username[0]|upper }}
+            </div>
+            {% endif %}
+            <div class="flex-1 min-w-0">
+                <h1 class="text-2xl font-semibold text-white">{{ user.username }}</h1>
+                <div class="text-sm text-gray-500 mt-1">
+                    <span>注册于 {{ user.created_at|datetime }}</span>
+                    <span class="mx-2">·</span>
+                    <span>最近登录 {{ user.last_login|datetime or '未知' }}</span>
+                </div>
+                {% set cb = credit_badge(user.id) %}<div class="mt-2" title="完成交换、获得好评可加分">信用：<span style="font-size:.9rem">{{ cb.emoji }} {{ cb.level }}</span> <span style="color:var(--lcz-text-secondary)">（{{ cb.score }} 分）</span></div>
+            </div>
+            <div class="flex gap-6 text-center">
+                <div>
+                    <div class="text-2xl font-semibold text-white">{{ total }}</div>
+                    <div class="text-xs text-gray-500">帖子</div>
+                </div>
+                <div>
+                    <div class="text-2xl font-semibold text-white">{{ reply_count }}</div>
+                    <div class="text-xs text-gray-500">回复</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TA的帖子 -->
+    <h2 class="text-xl font-semibold text-white mb-4">TA 的帖子</h2>
+    {% if topics %}
+    <div class="apple-card overflow-hidden divide-y divide-gray-100">
+        {% for t in topics %}
+        <a href="{{ url_for('topic', topic_id=t.id) }}" class="block px-6 py-4 hover:bg-black transition">
+            <h3 class="text-base font-medium text-white break-words">{{ t.title }}</h3>
+            <div class="text-xs text-gray-500 mt-1.5 flex flex-wrap gap-x-3 gap-y-1">
+                <span class="text-blue-600">{{ t.forum_name }}</span>
+                <span>{{ t.created_at|datetime }}</span>
+                <span>{{ t.views }} 浏览</span>
+                <span>{{ t.reply_count }} 回复</span>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+
+    {% if pages > 1 %}
+    <div class="flex justify-center items-center space-x-4 mt-8">
+        {% if page > 1 %}
+        <a href="{{ url_for('user_profile', user_id=user.id, page=page-1) }}" class="apple-btn-secondary text-sm">上一页</a>
+        {% endif %}
+        <span class="text-sm text-gray-500">第 {{ page }} / {{ pages }} 页</span>
+        {% if page < pages %}
+        <a href="{{ url_for('user_profile', user_id=user.id, page=page+1) }}" class="apple-btn-secondary text-sm">下一页</a>
+        {% endif %}
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="apple-card p-10 text-center text-gray-500">
+        还没有发过帖子
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}服务器开小差了 - 花友居论坛{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto text-center">
+    <div class="apple-card p-10">
+        <div class="text-6xl mb-4 text-gray-300">500</div>
+        <h1 class="text-xl font-semibold text-white mb-2">服务器开小差了</h1>
+        <p class="text-sm text-gray-500 mb-6">请稍后重试，或返回首页继续浏览</p>
+        <a href="{{ url_for('index') }}" class="apple-btn">返回首页</a>
+    </div>
+</div>
+{% endblock %}

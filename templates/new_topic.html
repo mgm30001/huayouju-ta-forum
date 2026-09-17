@@ -3,39 +3,31 @@
 {% block title %}发布新主题 - 花友居论坛{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto">
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6">发布新主题</h2>
-        <form method="post" class="space-y-4">
+<div class="max-w-3xl mx-auto">
+    <div class="apple-card p-6 md:p-8">
+        <h2 class="text-2xl font-semibold text-white mb-8">发布新主题</h2>
+        <form method="post" class="space-y-5">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
             <input type="hidden" name="image_urls" id="image_urls">
             <div>
-                <label for="title" class="block text-sm font-medium text-gray-700">主题标题</label>
-                <input type="text" name="title" id="title" required
-                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                <label for="title" class="block text-sm font-medium text-gray-300 mb-1.5">主题标题</label>
+                <input type="text" name="title" id="title" required class="apple-input">
             </div>
             <div>
-                <label for="content" class="block text-sm font-medium text-gray-700">主题内容</label>
-                <textarea name="content" id="content" rows="10" required
-                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"></textarea>
+                <label for="content" class="block text-sm font-medium text-gray-300 mb-1.5">主题内容</label>
+                <textarea name="content" id="content" rows="12" required class="apple-textarea"></textarea>
             </div>
-            <div class="mb-6">
-                <label for="image_upload" class="block text-gray-700 font-medium mb-2">上传图片</label>
-                <input type="file" id="image_upload" accept="image/*" multiple class="block w-full text-sm text-gray-500
-                    file:mr-4 file:py-2 file:px-4
-                    file:rounded-full file:border-0
-                    file:text-sm file:font-semibold
-                    file:bg-green-50 file:text-green-700
-                    hover:file:bg-green-100">
+            <div>
+                <label for="image_upload" class="block text-gray-300 font-medium mb-2 text-sm">上传图片</label>
+                <input type="file" id="image_upload" accept="image/*" multiple class="block w-full text-sm text-gray-500">
                 <p class="mt-1 text-sm text-gray-500">支持上传多张图片（JPG、PNG、GIF）。图片将上传到图床并自动插入到内容中。</p>
                 <div id="image_previews" class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4"></div>
             </div>
-            <div class="flex justify-end space-x-4">
-                <a href="{{ url_for('forum', forum_id=forum_id) }}"
-                    class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+            <div class="flex justify-end space-x-3 pt-2">
+                <a href="{{ url_for('forum', forum_id=forum_id) }}" class="apple-btn-secondary">
                     取消
                 </a>
-                <button type="submit"
-                    class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                <button type="submit" id="submit_btn" class="apple-btn">
                     发布
                 </button>
             </div>
@@ -47,8 +39,34 @@
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Handle image uploads
     const imageUploadInput = document.getElementById('image_upload');
+    const submitBtn = document.getElementById('submit_btn');
+    const form = document.querySelector('form');
+
+    // ---- 上传中防误提交机制 ----
+    let uploadingCount = 0;
+    const originalBtnHTML = submitBtn.innerHTML;
+
+    function updateSubmitState() {
+        if (uploadingCount > 0) {
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.5';
+            submitBtn.innerHTML = `⏳ 图片上传中（${uploadingCount}）…`;
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            submitBtn.innerHTML = originalBtnHTML;
+        }
+    }
+
+    form.addEventListener('submit', function(e) {
+        if (uploadingCount > 0) {
+            e.preventDefault();
+            alert(`还有 ${uploadingCount} 张图片正在上传，请稍候…`);
+        }
+    });
+    // --------------------------
+
     imageUploadInput.addEventListener('change', function(event) {
         const files = event.target.files;
         const previewsContainer = document.getElementById('image_previews');
@@ -58,15 +76,19 @@ document.addEventListener('DOMContentLoaded', function() {
         for (const file of files) {
             const formData = new FormData();
             formData.append('file', file);
+                formData.append('csrf_token', '{{ csrf_token }}');
+
+            uploadingCount++;
+            updateSubmitState();
 
             const previewId = `preview-${Date.now()}-${Math.random()}`;
             const previewElement = document.createElement('div');
             previewElement.id = previewId;
             previewElement.className = 'relative';
-            previewElement.innerHTML = `<div class="w-full h-32 bg-gray-200 rounded-lg flex items-center justify-center">Uploading...</div>`;
+            previewElement.innerHTML = `<div class="w-full h-32 bg-gray-200 rounded-xl flex items-center justify-center">Uploading...</div>`;
             previewsContainer.appendChild(previewElement);
 
-            fetch('/upload_image', { // Changed URL to proxy endpoint
+            fetch('/upload_image', {
                 method: 'POST',
                 body: formData
             })
@@ -74,9 +96,8 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 if (data.code === 200 && data.data.url) {
                     const imageUrl = data.data.url;
-                    
                     const uploadedPreview = document.getElementById(previewId);
-                    uploadedPreview.innerHTML = `<img src="${imageUrl}" class="w-full h-32 object-cover rounded-lg">`;
+                    uploadedPreview.innerHTML = `<img src="${imageUrl}" class="w-full h-32 object-cover rounded-xl">`;
 
                     const currentUrls = imageUrlsInput.value ? imageUrlsInput.value.split(',') : [];
                     currentUrls.push(imageUrl);
@@ -87,14 +108,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     contentTextarea.value = currentContent + separator + `![Image](${imageUrl})`;
                 } else {
                     const errorPreview = document.getElementById(previewId);
-                    errorPreview.innerHTML = `<div class="w-full h-32 bg-red-100 text-red-700 rounded-lg flex items-center justify-center p-2">Upload Failed</div>`;
+                    errorPreview.innerHTML = `<div class="w-full h-32 bg-red-100 text-red-700 rounded-xl flex items-center justify-center p-2">Upload Failed</div>`;
                     console.error('Upload failed:', data.message || 'Unknown error');
                 }
             })
             .catch(error => {
                 const errorPreview = document.getElementById(previewId);
-                errorPreview.innerHTML = `<div class="w-full h-32 bg-red-100 text-red-700 rounded-lg flex items-center justify-center p-2">Upload Error</div>`;
+                errorPreview.innerHTML = `<div class="w-full h-32 bg-red-100 text-red-700 rounded-xl flex items-center justify-center p-2">Upload Error</div>`;
                 console.error('Upload error:', error);
+            })
+            .finally(() => {
+                uploadingCount--;
+                updateSubmitState();
             });
         }
     });

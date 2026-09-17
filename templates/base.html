@@ -1,29 +1,283 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}花友居论坛{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>{% block title %}花友居论坛 - 花卉种植与养护交流社区{% endblock %}</title>
+    <!-- PWA -->
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#060606">
+    <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="花友居">
+    {% block seo %}{% endblock %}
+    <meta name="description" content="{% block description %}花友居论坛 - 专注花卉种植、养护、交流和分享的社区平台。园艺经验、植物辨识、病虫害防治、家庭园艺一站式交流。{% endblock %}">
+    <meta name="keywords" content="花友居,花卉论坛,园艺,种植,养花,植物辨识,病虫害防治,家庭园艺">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="花友居论坛">
+    <!-- Google Search Console 验证 -->
+    <meta name="google-site-verification" content="9OZma07egNjKrUI_Wwu7a6MZfEEUj_3Yy1TYD-y3uKU">
+    <!-- Canonical -->
+    <link rel="canonical" href="{{ request.url }}">
+    <!-- Open Graph -->
+    <meta property="og:site_name" content="花友居论坛">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{% block og_title %}花友居论坛{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}花友居论坛 - 花卉种植与养护交流社区{% endblock %}">
+    <meta property="og:url" content="{{ request.url }}">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="{% block tw_title %}花友居论坛{% endblock %}">
+    <meta name="twitter:description" content="花友居论坛 - 花卉种植与养护交流社区">
+    <!-- 结构化数据：WebSite -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "花友居论坛",
+        "description": "专注花卉种植、养护、交流和分享的社区平台",
+        "url": "{{ request.host_url.rstrip('/') }}"
+    }
+    </script>
+    {% block extra_seo %}{% endblock %}
     <link href="https://cdn.bootcdn.net/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.bootcdn.net/ajax/libs/viewerjs/1.10.2/viewer.min.css" rel="stylesheet">
     <script src="https://cdn.bootcdn.net/ajax/libs/marked/4.0.2/marked.min.js"></script>
+    <style>
+        /* ── lcz 风格暗黑主题（纯黑 + 亮蓝 + 小圆角高密度）── */
+        :root {
+            --lcz-primary: #2a9fd6;
+            --lcz-primary-hover: #3db1e8;
+            --lcz-bg: #060606;
+            --lcz-card: #282828;
+            --lcz-card-hover: #303030;
+            --lcz-text: #dee2e6;
+            --lcz-text-secondary: #8a939c;
+            --lcz-border: #333333;
+            --lcz-radius: 4px;
+            --lcz-success: #77b300;
+            --lcz-warning: #ff8800;
+            --lcz-danger: #cc0000;
+            --lcz-code-bg: #1a1a1a;
+        }
+
+        * { -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif, "Apple Color Emoji";
+            background-color: var(--lcz-bg);
+            color: var(--lcz-text);
+            font-size: 15px;
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 导航栏（实色深黑，非毛玻璃） */
+        .lcz-nav {
+            background: #0d0d0d;
+            border-bottom: 1px solid var(--lcz-border);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .lcz-nav a { color: var(--lcz-text); transition: color .15s; }
+        .lcz-nav a:hover { color: var(--lcz-primary); }
+        .lcz-nav a.active { color: var(--lcz-primary); font-weight: 600; }
+
+        /* 卡片（扁平深灰，小圆角） */
+        .apple-card {
+            background: var(--lcz-card);
+            border-radius: var(--lcz-radius);
+            border: 1px solid var(--lcz-border);
+            box-shadow: none;
+        }
+        .apple-card:hover { border-color: #444; }
+
+        /* 按钮（亮蓝，直角） */
+        .apple-btn {
+            background: var(--lcz-primary);
+            color: #fff;
+            border-radius: var(--lcz-radius);
+            padding: 7px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            display: inline-block;
+            transition: all .15s;
+            border: none;
+            cursor: pointer;
+        }
+        .apple-btn:hover { background: var(--lcz-primary-hover); }
+        .apple-btn:active { transform: scale(0.98); }
+        .apple-btn-secondary {
+            background: transparent;
+            color: var(--lcz-text);
+            border-radius: var(--lcz-radius);
+            padding: 7px 16px;
+            font-size: 14px;
+            display: inline-block;
+            transition: all .15s;
+            border: 1px solid var(--lcz-border);
+            cursor: pointer;
+        }
+        .apple-btn-secondary:hover { border-color: var(--lcz-primary); color: var(--lcz-primary); }
+
+        /* 链接 */
+        .apple-link { color: var(--lcz-primary); transition: color .15s; }
+        .apple-link:hover { color: var(--lcz-primary-hover); text-decoration: underline; }
+
+        /* 输入框（深灰底，直角，蓝焦点边框） */
+        .apple-input {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid var(--lcz-border);
+            border-radius: var(--lcz-radius);
+            background: var(--lcz-bg);
+            color: var(--lcz-text);
+            font-size: 14px;
+            transition: border-color .15s, box-shadow .15s;
+            outline: none;
+        }
+        .apple-input:focus {
+            border-color: var(--lcz-primary);
+            box-shadow: 0 0 0 2px rgba(42, 159, 214, 0.25);
+        }
+        .apple-input::placeholder { color: var(--lcz-text-secondary); }
+        .apple-textarea {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid var(--lcz-border);
+            border-radius: var(--lcz-radius);
+            background: var(--lcz-bg);
+            color: var(--lcz-text);
+            font-size: 14px;
+            line-height: 1.8;
+            transition: border-color .15s, box-shadow .15s;
+            outline: none;
+            resize: vertical;
+        }
+        .apple-textarea:focus {
+            border-color: var(--lcz-primary);
+            box-shadow: 0 0 0 2px rgba(42, 159, 214, 0.25);
+        }
+        .apple-textarea::placeholder { color: var(--lcz-text-secondary); }
+
+        /* 帖子内容排版（中文阅读优化） */
+        .prose {
+            line-height: 2;
+            color: var(--lcz-text);
+            font-size: 16px;
+            letter-spacing: 0.01em;
+        }
+        .prose p { margin: 0.8em 0; }
+        .prose img { max-width: 100%; height: auto; border-radius: var(--lcz-radius); margin: 1em 0; }
+        .prose pre {
+            overflow-x: auto;
+            background: var(--lcz-code-bg);
+            border-radius: var(--lcz-radius);
+            padding: 16px 20px;
+            font-size: 14px;
+            line-height: 1.7;
+            border: 1px solid var(--lcz-border);
+        }
+        .prose code { background: rgba(255,255,255,0.08); border-radius: 3px; padding: 2px 6px; font-size: 0.9em; }
+        .prose pre code { background: none; padding: 0; }
+        .prose table { display: block; overflow-x: auto; white-space: nowrap; border-collapse: collapse; margin: 1em 0; }
+        .prose table td, .prose table th { border: 1px solid var(--lcz-border); padding: 8px 12px; }
+        .prose blockquote {
+            border-left: 3px solid var(--lcz-primary);
+            background: rgba(42, 159, 214, 0.08);
+            border-radius: 0 var(--lcz-radius) var(--lcz-radius) 0;
+            padding: 10px 16px;
+            margin: 1.2em 0;
+            color: var(--lcz-text-secondary);
+        }
+        .prose h1, .prose h2, .prose h3, .prose h4 {
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            margin-top: 1.8em;
+            margin-bottom: 0.8em;
+            line-height: 1.4;
+            color: #fff;
+        }
+        .prose h1 { font-size: 1.6em; }
+        .prose h2 { font-size: 1.35em; }
+        .prose h3 { font-size: 1.15em; }
+        .prose ul, .prose ol { margin: 0.8em 0; padding-left: 1.6em; }
+        .prose li { margin: 0.4em 0; }
+        .prose hr { border: none; border-top: 1px solid var(--lcz-border); margin: 2em 0; }
+        .prose a { color: var(--lcz-primary); }
+
+        /* 分割线 */
+        .apple-divider { border-bottom: 1px solid var(--lcz-border); }
+
+        /* 列表项 hover（帖子行） */
+        .apple-item { transition: background .15s, border-color .15s; border-radius: var(--lcz-radius); }
+        .apple-item:hover { background: var(--lcz-card-hover); }
+
+        /* 徽章 */
+        .lcz-badge {
+            display: inline-block;
+            padding: 1px 8px;
+            font-size: 11px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+        .lcz-badge-primary { background: rgba(42,159,214,.15); color: var(--lcz-primary); }
+        .lcz-badge-success { background: rgba(119,179,0,.15); color: var(--lcz-success); }
+        .lcz-badge-warning { background: rgba(255,136,0,.15); color: var(--lcz-warning); }
+
+        /* flash 消息 */
+        .lcz-flash {
+            background: rgba(42,159,214,.12);
+            border: 1px solid rgba(42,159,214,.35);
+            color: var(--lcz-primary);
+            padding: 10px 16px;
+            margin-bottom: 16px;
+            border-radius: var(--lcz-radius);
+            font-size: 14px;
+        }
+
+        @media (max-width: 640px) {
+            .prose { font-size: 17px; line-height: 1.9; }
+            .prose h1 { font-size: 1.45rem; }
+            .prose h2 { font-size: 1.3rem; }
+            .prose h3 { font-size: 1.15rem; }
+        }
+    </style>
 </head>
-<body class="bg-gray-100">
-    <!-- 导航栏 -->
-    <nav class="bg-green-600 text-white shadow-lg">
-        <div class="container mx-auto px-4">
-            <div class="flex justify-between items-center py-4">
-                <div class="flex items-center">
-                    <a href="{{ url_for('index') }}" class="text-2xl font-bold">花友居论坛</a>
+<body>
+    <!-- 顶部导航 -->
+    <nav class="lcz-nav">
+        <div class="max-w-5xl mx-auto px-4">
+            <div class="flex justify-between items-center h-14">
+                <div class="flex items-center space-x-6">
+                    <a href="{{ url_for('index') }}" class="text-lg font-bold tracking-tight text-white">花友居</a>
+                    <div class="hidden sm:flex items-center space-x-5 text-sm">
+                        <a href="{{ url_for('stats') }}">统计</a>
+                    </div>
                 </div>
-                <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-5 text-sm">
+                    <!-- 搜索框 -->
+                    <form action="{{ url_for('search') }}" method="get" class="hidden sm:block">
+                        <input type="text" name="q" placeholder="搜索帖子..."
+                            class="apple-input !py-1.5 w-40 focus:w-56 transition-all text-sm">
+                    </form>
+                    <a href="{{ url_for('rss_feed') }}" title="RSS订阅"><i class="fas fa-rss"></i></a>
                     {% if session.get('user_id') %}
-                        <span>欢迎，{{ session.get('username') }}</span>
-                        <a href="{{ url_for('logout') }}" class="hover:text-green-200">退出</a>
+                        <span class="hidden sm:inline" style="color:var(--lcz-text-secondary)">{{ session.get('username') }}</span>
+                        <a href="{{ url_for('my_favorites') }}" title="我的收藏"><i class="far fa-star"></i></a>
+                        <a href="{{ url_for('notifications') }}" class="relative" title="通知">
+                            <i class="fas fa-bell"></i>
+                            <span id="notif-badge" class="hidden absolute -top-1.5 -right-2 bg-red-600 text-white text-[10px] rounded-full px-1.5 py-0.5 min-w-[16px] text-center">0</span>
+                        </a>
+                        <a href="{{ url_for('profile') }}" title="个人设置"><i class="fas fa-user-cog"></i></a>
+                        <a href="{{ url_for('my_topics') }}">我的帖子</a>
+                        <a href="{{ url_for('logout') }}" style="color:var(--lcz-text-secondary)">退出</a>
                     {% else %}
-                        <a href="{{ url_for('login') }}" class="hover:text-green-200">登录</a>
-                        <a href="{{ url_for('register') }}" class="hover:text-green-200">注册</a>
+                        <a href="{{ url_for('login') }}" class="font-medium">登录</a>
+                        <a href="{{ url_for('register') }}" style="color:var(--lcz-text-secondary)">注册</a>
                     {% endif %}
                 </div>
             </div>
@@ -31,11 +285,11 @@
     </nav>
 
     <!-- 主要内容 -->
-    <main class="container mx-auto px-4 py-8">
+    <main class="max-w-5xl mx-auto px-4 py-6">
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 {% for message in messages %}
-                    <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4" role="alert">
+                    <div class="lcz-flash" role="alert">
                         <p>{{ message }}</p>
                     </div>
                 {% endfor %}
@@ -46,37 +300,47 @@
     </main>
 
     <!-- 页脚 -->
-    <footer class="bg-gray-800 text-white py-8">
-        <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">关于我们</h3>
-                    <p>花友居论坛是一个专注于花卉种植、养护和交流的社区平台。</p>
-                </div>
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">快速链接</h3>
-                    <ul class="space-y-2">
-                        <li><a href="{{ url_for('index') }}" class="hover:text-green-400">首页</a></li>
-                        <li><a href="#" class="hover:text-green-400">帮助中心</a></li>
-                        <li><a href="#" class="hover:text-green-400">联系我们</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">关注我们</h3>
-                    <div class="flex space-x-4">
-                        <a href="#" class="hover:text-green-400"><i class="fab fa-weixin"></i></a>
-                        <a href="#" class="hover:text-green-400"><i class="fab fa-weibo"></i></a>
-                    </div>
+    <footer class="mt-12 pb-10">
+        <div class="max-w-5xl mx-auto px-4 pt-6" style="border-top:1px solid var(--lcz-border)">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <p class="text-sm" style="color:var(--lcz-text-secondary)">花友居论坛 — 专注于花卉种植、养护和交流的社区平台。</p>
+                <div class="flex space-x-6 text-sm" style="color:var(--lcz-text-secondary)">
+                    <a href="{{ url_for('index') }}" class="hover:text-blue-400">首页</a>
+                    <a href="{{ url_for('stats') }}" class="hover:text-blue-400">统计</a>
+                    <a href="{{ url_for('rss_feed') }}" class="hover:text-blue-400">RSS</a>
                 </div>
             </div>
-            <div class="mt-8 pt-8 border-t border-gray-700 text-center">
-                <p>&copy; 2024 花友居论坛. All rights reserved.</p>
-            </div>
+            <p class="text-xs mt-6" style="color:#666">&copy; 2024 花友居论坛. All rights reserved.</p>
         </div>
     </footer>
 
     <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.bootcdn.net/ajax/libs/viewerjs/1.10.2/viewer.min.js"></script>
+    <script>
+    // 未读通知角标
+    document.addEventListener('DOMContentLoaded', function() {
+        const badge = document.getElementById('notif-badge');
+        if (badge) {
+            fetch('/notifications/unread_count')
+                .then(r => r.json())
+                .then(d => {
+                    if (d.count > 0) {
+                        badge.textContent = d.count > 99 ? '99+' : d.count;
+                        badge.classList.remove('hidden');
+                    }
+                })
+                .catch(() => {});
+        }
+    });
+    </script>
     {% block scripts %}{% endblock %}
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/static/sw.js').catch(err =>
+      console.log('SW注册失败:', err));
+  });
+}
+</script>
 </body>
 </html>

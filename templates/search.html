@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}搜索 - 花友居论坛{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-2xl font-semibold text-white mb-6">搜索</h1>
+
+    <!-- 搜索框 -->
+    <form action="{{ url_for('search') }}" method="get" class="mb-8">
+        <div class="flex gap-2">
+            <input type="text" name="q" value="{{ query }}" placeholder="搜索帖子标题或内容..."
+                class="apple-input flex-1" autofocus>
+            <button type="submit" class="apple-btn shrink-0">
+                <i class="fas fa-search"></i> 搜索
+            </button>
+        </div>
+    </form>
+
+    {% if query %}
+    <p class="text-sm text-gray-500 mb-4">搜索"<span class="font-medium text-gray-300">{{ query }}</span>"，找到 {{ total }} 个结果</p>
+
+    {% if results %}
+    <div class="apple-card overflow-hidden divide-y divide-gray-100">
+        {% for t in results %}
+        <a href="{{ url_for('topic', topic_id=t.id) }}" class="block px-6 py-4 hover:bg-black transition">
+            <h3 class="text-base font-medium text-white break-words">{{ t.title }}</h3>
+            {% if t.summary %}
+            <p class="text-sm text-gray-500 mt-1.5 line-clamp-2">{{ t.summary }}</p>
+            {% endif %}
+            <div class="text-xs text-gray-500 mt-1.5 flex flex-wrap gap-x-3 gap-y-1">
+                <span class="text-blue-600">{{ t.forum_name }}</span>
+                <span>{{ t.author_name }}</span>
+                <span>{{ t.created_at|datetime }}</span>
+                <span>{{ t.reply_count }} 回复</span>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- 分页 -->
+    {% if pages > 1 %}
+    <div class="flex justify-center items-center space-x-4 mt-8">
+        {% if page > 1 %}
+        <a href="{{ url_for('search', q=query, page=page-1) }}" class="apple-btn-secondary text-sm">上一页</a>
+        {% endif %}
+        <span class="text-sm text-gray-500">第 {{ page }} / {{ pages }} 页</span>
+        {% if page < pages %}
+        <a href="{{ url_for('search', q=query, page=page+1) }}" class="apple-btn-secondary text-sm">下一页</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="apple-card p-10 text-center text-gray-500">
+        没有找到相关内容，换个关键词试试
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

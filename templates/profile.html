@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}个人设置 - 花友居论坛{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto">
+    <div class="apple-card p-8">
+        <h2 class="text-2xl font-semibold text-white mb-8 text-center">个人设置</h2>
+
+        <!-- 当前头像 -->
+        <div class="flex justify-center mb-6">
+            {% if user.avatar %}
+            <img src="{{ user.avatar }}" class="w-24 h-24 rounded-full object-cover border-2 border-gray-700" alt="头像">
+            {% else %}
+            <div class="w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center text-3xl font-semibold text-blue-600 border-2 border-gray-700">
+                {{ user.username[0]|upper }}
+            </div>
+            {% endif %}
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="space-y-5">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1.5">用户名</label>
+                <input type="text" value="{{ user.username }}" disabled class="apple-input bg-black text-gray-400">
+            </div>
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-300 mb-1.5">电子邮箱</label>
+                <input type="email" name="email" id="email" value="{{ user.email or '' }}" class="apple-input">
+            </div>
+            <div>
+                <label for="avatar" class="block text-sm font-medium text-gray-300 mb-1.5">更换头像</label>
+                <input type="file" name="avatar" id="avatar" accept="image/*" class="block w-full text-sm text-gray-500">
+                <p class="mt-1 text-xs text-gray-400">支持 JPG、PNG、GIF</p>
+            </div>
+            <div>
+                <button type="submit" class="apple-btn w-full py-3 text-base">保存修改</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 修改密码（独立表单） -->
+    <div class="apple-card p-8 mt-6">
+        <h3 class="text-lg font-semibold text-white mb-5">修改密码</h3>
+        <form method="post" class="space-y-4">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <div>
+                <label for="old_password" class="block text-sm font-medium text-gray-300 mb-1.5">当前密码</label>
+                <input type="password" name="old_password" id="old_password" required autocomplete="current-password" class="apple-input">
+            </div>
+            <div>
+                <label for="new_password" class="block text-sm font-medium text-gray-300 mb-1.5">新密码</label>
+                <input type="password" name="new_password" id="new_password" required minlength="6" autocomplete="new-password" class="apple-input">
+                <p class="mt-1 text-xs text-gray-400">至少 6 位</p>
+            </div>
+            <div>
+                <label for="confirm_password" class="block text-sm font-medium text-gray-300 mb-1.5">确认新密码</label>
+                <input type="password" name="confirm_password" id="confirm_password" required minlength="6" autocomplete="new-password" class="apple-input">
+            </div>
+            <div>
+                <button type="submit" class="apple-btn w-full py-3 text-base">更新密码</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="mt-6 text-center">
+        <a href="{{ url_for('user_profile', user_id=user.id) }}" class="apple-link text-sm">查看我的主页</a>
+    </div>
+</div>
+{% endblock %}

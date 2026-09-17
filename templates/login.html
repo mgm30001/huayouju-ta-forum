@@ -4,32 +4,33 @@
 
 {% block content %}
 <div class="max-w-md mx-auto">
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6">用户登录</h2>
-        <form method="post" class="space-y-4">
+    <div class="apple-card p-8">
+        <h2 class="text-2xl font-semibold text-white mb-8 text-center">用户登录</h2>
+        <form method="post" class="space-y-5">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
             <div>
-                <label for="username" class="block text-sm font-medium text-gray-700">用户名</label>
-                <input type="text" name="username" id="username" required
-                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                <label for="username" class="block text-sm font-medium text-gray-300 mb-1.5">用户名</label>
+                <input type="text" name="username" id="username" required class="apple-input">
             </div>
             <div>
-                <label for="password" class="block text-sm font-medium text-gray-700">密码</label>
-                <input type="password" name="password" id="password" required
-                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                <label for="password" class="block text-sm font-medium text-gray-300 mb-1.5">密码</label>
+                <input type="password" name="password" id="password" required class="apple-input">
             </div>
             <div>
-                <button type="submit"
-                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                <button type="submit" class="apple-btn w-full py-3 text-base">
                     登录
                 </button>
             </div>
         </form>
-        <div class="mt-4 text-center">
-            <p class="text-sm text-gray-600">
+        <div class="mt-6 text-center space-y-2">
+            <p class="text-sm text-gray-500">
                 还没有账号？
-                <a href="{{ url_for('register') }}" class="text-green-600 hover:text-green-700">立即注册</a>
+                <a href="{{ url_for('register') }}" class="apple-link">立即注册</a>
+            </p>
+            <p class="text-xs text-gray-400">
+                <a href="{{ url_for('forgot_password') }}" class="hover:text-gray-600">忘记密码？</a>
             </p>
         </div>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}
