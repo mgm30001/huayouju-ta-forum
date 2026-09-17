@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+Disallow: /login
+Disallow: /register
+Disallow: /profile
+Disallow: /edit_topic/
+Disallow: /notifications
+
+Sitemap: https://hua.moome.eu.org/sitemap.xml
+
+# AI / LLM 接入说明
+# 供 AI 代理与自动化工具的站点数据接口清单：
+# https://hua.moome.eu.org/llms.txt
+# https://hua.moome.eu.org/llms-full.txt
+# https://hua.moome.eu.org/openapi.json

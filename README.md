@@ -93,6 +93,52 @@ huayouju-ta/
 4. 推送到分支
 5. 创建 Pull Request
 
+## AI 资料获取接口（hua.moome.eu.org）
+
+本仓库提供 `ai_access.py`（Flask Blueprint），为 AI 代理 / RAG 管道 / 爬虫
+增加一套面向机器阅读的数据接口：
+
+| 端点 | 说明 |
+|---|---|
+| `GET /llms.txt` | 站点 AI 接入说明（动态生成，含版块表与接口文档） |
+| `GET /llms-full.txt` | 全量主题 + 回复的 Markdown 文本 |
+| `GET /topic/<id>.md` | 单个主题的纯 Markdown 导出 |
+| `GET /forum/<id>/rss` | 按版块 RSS（RFC 822 时间格式） |
+| `GET /api/topics/<id>` | 主题详情 JSON（正文 + 全部回复） |
+| `GET /api/search` | 搜索 JSON（q / forum_id / page / per_page） |
+| `GET /api/forums` | 版块列表 JSON（含主题数） |
+| `GET /openapi.json` | 接口文档（OpenAPI 3.0） |
+
+### 接入步骤
+
+1. 把 `ai_access.py` 上传到服务器，与 `web_app.py` 放在同一目录。
+2. 在 `web_app.py` 底部（`if __name__ == '__main__'` 之前）加两行：
+
+   ```python
+   from ai_access import ai_bp
+   app.register_blueprint(ai_bp)
+   ```
+
+3. 重启 gunicorn（如 `systemctl restart huayouju`）。
+4. 用 `robots.txt`（本仓库根目录，已移除 `Disallow: /api/`）替换服务器上现有的。
+
+可用环境变量（可选）：`HUA_DB_PATH`（SQLite 路径，默认 `forum.db`）、
+`HUA_BASE_URL`（默认 `https://hua.moome.eu.org`）、
+`HUA_TZ_OFFSET`（RSS 时区偏移，默认 `+0800`）。
+
+### 还需在 web_app.py 中手动修正的小问题
+
+1. **`/rss` 的 pubDate 格式**：当前输出 `2026-09-16 11:47:22.040046`，
+   不是 RSS 2.0 要求的 RFC 822 格式。找到生成 `/rss` 的函数，把 pubDate
+   改成类似 `dt.strftime('%a, %d %b %Y %H:%M:%S') + ' +0800'`
+   （可参考 `ai_access.py` 中的 `_rss_date()`）。
+2. **JSON-LD 的 `datePublished`**：当前不是 ISO 8601，改成
+   `dt.strftime('%Y-%m-%dT%H:%M:%S') + '+08:00'`。
+3. **sitemap.xml 补 `lastmod`**：给每个 `<url>` 加上真实的
+   `<lastmod>YYYY-MM-DD</lastmod>`（取主题的 updated_at 日期），
+   让爬虫优先抓更新内容。
+4. 建议给 `DiscussionForumPosting` 补上 `commentCount` 与 `discussionUrl` 字段。
+
 ## 许可证
 
 MIT License 
