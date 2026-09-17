@@ -218,6 +218,12 @@ def parse_ts(value):
             continue
     return None
 
+@app.template_filter('iso8601')
+def iso8601(value):
+    """输出 ISO 8601 格式时间（JSON-LD 的 datePublished/dateModified 等需要），解析失败返回空串。"""
+    dt = parse_ts(value)
+    return dt.strftime('%Y-%m-%dT%H:%M:%S+08:00') if dt else ''
+
 @app.route('/upload_image', methods=['POST'])
 @limiter.limit("10 per minute")
 def upload_image():
