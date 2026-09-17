@@ -8,10 +8,12 @@ ai_access.py — 花友居论坛「AI 资料获取」接口蓝图（Flask Bluepr
     GET /llms-full.txt        全量主题 + 回复的 Markdown 文本（供 RAG 一次性摄取）
     GET /topic/<id>.md        单个主题的纯 Markdown 导出
     GET /forum/<id>/rss       按版块 RSS（RFC 822 标准时间格式）
-    GET /api/topics/<id>      主题详情 JSON（正文 + 全部回复）
-    GET /api/search           搜索 JSON（参数 q / forum_id / page / per_page）
     GET /api/forums           版块列表 JSON（含主题数）
-    GET /openapi.json         接口文档（OpenAPI 3.0）
+    GET /openapi.json         接口文档（OpenAPI 3.0，含 web_app.py 中已有端点）
+
+注意：主题列表/搜索/详情请使用 web_app.py 中已有的端点
+（GET /api/topics、GET /api/topics?q=、GET /api/topic/<id>），
+本模块不重复实现，避免行为不一致。
 
 接入方式（在 web_app.py 底部加两行即可，不影响现有路由）：
 
@@ -141,8 +143,7 @@ def llms_txt():
         f'- RSS 订阅（最新主题）：{BASE_URL}/rss',
         f'- 按版块 RSS：{BASE_URL}/forum/<id>/rss（示例：{BASE_URL}/forum/5/rss）',
         f'- JSON API（主题列表，支持搜索与版块过滤）：{BASE_URL}/api/topics',
-        f'- JSON API（主题详情，含正文与回复）：{BASE_URL}/api/topics/<id>',
-        f'- JSON API（搜索）：{BASE_URL}/api/search?q=关键词',
+        f'- JSON API（主题详情，含正文与全部回复）：{BASE_URL}/api/topic/<id>',
         f'- JSON API（版块列表）：{BASE_URL}/api/forums',
         f'- 接口文档（OpenAPI 3.0）：{BASE_URL}/openapi.json',
         f'- 站点地图：{BASE_URL}/sitemap.xml',
@@ -150,13 +151,13 @@ def llms_txt():
         '## JSON API 说明',
         '',
         '- `GET /api/topics` — 主题列表（按创建时间倒序）',
-        '  - 参数：`page`（默认 1）、`per_page`（默认 20，上限 100）、`q`（标题/正文关键词）、`forum_id`（按版块过滤）',
-        '  - 返回：`{"page":1,"per_page":20,"total":N,"topics":[{"id","title","author","forum_id","forum_name","created_at","updated_at","replies","views"}]}`',
-        '- `GET /api/topics/<id>` — 主题详情',
-        '  - 返回：`{"id","title","author","forum_id","forum_name","url","created_at","updated_at","views","replies_count","content"(Markdown 原文),"replies":[{"id","author","created_at","content","url"}]}`',
-        '- `GET /api/search` — 搜索（参数同上，另返回 `query` 字段）',
+        '  - 参数：`page`（默认 1）、`per_page`（默认 20）、`q`（标题/正文关键词搜索）、`forum_id`（按版块过滤）',
+        '  - 返回：`{"total":N,"page":1,"per_page":20,"topics":[{"id","title","forum_id","forum_name","user_id","author","views","replies","created_at","updated_at"}]}`',
+        '- `GET /api/topics?q=关键词` — 搜索（与列表同一端点）',
+        '- `GET /api/topic/<id>` — 主题详情',
+        '  - 返回：`{"id","title","forum_id","forum_name","user_id","author","content"(Markdown 原文),"views","replies","created_at","updated_at","replies":[{"id","user_id","author","content","created_at"}]}`',
         '- `GET /api/forums` — 版块列表',
-        '  - 返回：`[{"id","name","description","url","topic_count"}]`',
+        '  - 返回：`[{"id","name","description","url","rss","topic_count"}]`',
         '- 主题页面 HTML：`GET /topic/<id>`（服务端渲染，正文与回复均含在初始响应中，无需 JavaScript）',
         '',
         '## 版块列表',
@@ -319,91 +320,6 @@ def forum_rss(forum_id):
     return Response(xml, mimetype='application/rss+xml; charset=utf-8')
 
 
-# ─────────────────────────── API：主题详情 ───────────────────────────
-
-@ai_bp.route('/api/topics/<int:topic_id>')
-def api_topic_detail(topic_id):
-    conn = _db()
-    cur = conn.cursor()
-    row = cur.execute(_list_topic_sql() + ' WHERE t.id = ?', (topic_id,)).fetchone()
-    if row is None:
-        conn.close()
-        return jsonify({'error': 'topic not found'}), 404
-    replies = cur.execute(
-        'SELECT r.id, r.content, r.created_at, u.username as author_name '
-        'FROM replies r LEFT JOIN users u ON r.user_id = u.id '
-        'WHERE r.topic_id = ? AND (r.status IS NULL OR r.status = 1) ORDER BY r.created_at ASC, r.id ASC',
-        (topic_id,),
-    ).fetchall()
-    conn.close()
-
-    return jsonify({
-        'id': row['id'],
-        'title': row['title'],
-        'author': row['author_name'],
-        'forum_id': row['forum_id'],
-        'forum_name': row['forum_name'],
-        'url': f'{BASE_URL}/topic/{row["id"]}',
-        'created_at': _ts(row['created_at']),
-        'updated_at': _ts(row['updated_at']),
-        'views': row['views'],
-        'replies_count': len(replies),
-        'content': row['content'] or '',
-        'replies': [
-            {
-                'id': r['id'],
-                'author': r['author_name'],
-                'created_at': _ts(r['created_at']),
-                'content': r['content'] or '',
-                'url': f'{BASE_URL}/topic/{row["id"]}#reply-{r["id"]}',
-            }
-            for r in replies
-        ],
-    })
-
-
-# ─────────────────────────── API：搜索 ───────────────────────────
-
-@ai_bp.route('/api/search')
-def api_search():
-    q = (request.args.get('q') or '').strip()
-    try:
-        page = max(1, int(request.args.get('page', 1)))
-        per_page = min(100, max(1, int(request.args.get('per_page', 20))))
-    except ValueError:
-        return jsonify({'error': 'page/per_page 必须为整数'}), 400
-    forum_id = request.args.get('forum_id', type=int)
-
-    conn = _db()
-    cur = conn.cursor()
-    where, args = [], []
-    if q:
-        where.append('(t.title LIKE ? OR t.content LIKE ?)')
-        args += [f'%{q}%', f'%{q}%']
-    if forum_id:
-        where.append('t.forum_id = ?')
-        args.append(forum_id)
-    wsql = ('WHERE ' + ' AND '.join(where)) if where else ''
-
-    cur.execute(f'SELECT COUNT(*) FROM topics t {wsql}', args)
-    total = cur.fetchone()[0]
-    rows = cur.execute(
-        _list_topic_sql() + wsql +
-        ' ORDER BY t.created_at DESC, t.id DESC LIMIT ? OFFSET ?',
-        args + [per_page, (page - 1) * per_page],
-    ).fetchall()
-    conn.close()
-
-    return jsonify({
-        'query': q,
-        'forum_id': forum_id,
-        'page': page,
-        'per_page': per_page,
-        'total': total,
-        'topics': [_topic_row(r) for r in rows],
-    })
-
-
 # ─────────────────────────── API：版块列表 ───────────────────────────
 
 @ai_bp.route('/api/forums')
@@ -444,35 +360,51 @@ def openapi():
         'paths': {
             '/api/topics': {
                 'get': {
-                    'summary': '主题列表',
+                    'summary': '主题列表（加 ?q= 即为搜索）',
                     'parameters': [
                         {'name': 'page', 'in': 'query', 'schema': {'type': 'integer', 'default': 1}},
-                        {'name': 'per_page', 'in': 'query', 'schema': {'type': 'integer', 'default': 20, 'maximum': 100}},
+                        {'name': 'per_page', 'in': 'query', 'schema': {'type': 'integer', 'default': 20}},
                         {'name': 'q', 'in': 'query', 'schema': {'type': 'string'}, 'description': '标题/正文关键词'},
                         {'name': 'forum_id', 'in': 'query', 'schema': {'type': 'integer'}, 'description': '按版块过滤'},
                     ],
-                }
+                },
+                'post': {
+                    'summary': '发布新主题（需 API key）',
+                    'requestBody': {
+                        'content': {'application/json': {'schema': {
+                            'type': 'object',
+                            'required': ['forum_id', 'title', 'content'],
+                            'properties': {
+                                'forum_id': {'type': 'integer'},
+                                'title': {'type': 'string'},
+                                'content': {'type': 'string'},
+                            },
+                        }}}
+                    },
+                },
             },
-            '/api/topics/{id}': {
+            '/api/topic/{id}': {
                 'get': {
-                    'summary': '主题详情（正文 + 全部回复）',
+                    'summary': '主题详情（正文 Markdown 原文 + 全部回复）',
                     'parameters': [
                         {'name': 'id', 'in': 'path', 'required': True, 'schema': {'type': 'integer'}}
                     ],
-                }
-            },
-            '/api/search': {
-                'get': {
-                    'summary': '搜索主题',
+                },
+                'post': {
+                    'summary': '回复主题（需 API key）',
                     'parameters': [
-                        {'name': 'q', 'in': 'query', 'schema': {'type': 'string'}},
-                        {'name': 'forum_id', 'in': 'query', 'schema': {'type': 'integer'}},
-                        {'name': 'page', 'in': 'query', 'schema': {'type': 'integer', 'default': 1}},
-                        {'name': 'per_page', 'in': 'query', 'schema': {'type': 'integer', 'default': 20, 'maximum': 100}},
+                        {'name': 'id', 'in': 'path', 'required': True, 'schema': {'type': 'integer'}}
                     ],
-                }
+                    'requestBody': {
+                        'content': {'application/json': {'schema': {
+                            'type': 'object',
+                            'required': ['content'],
+                            'properties': {'content': {'type': 'string'}},
+                        }}}
+                    },
+                },
             },
-            '/api/forums': {'get': {'summary': '版块列表'}},
+            '/api/forums': {'get': {'summary': '版块列表（含主题数与各版块 RSS 地址）'}},
             '/llms.txt': {'get': {'summary': '站点 AI 接入说明（llms.txt）'}},
             '/llms-full.txt': {'get': {'summary': '全量主题+回复 Markdown'}},
             '/topic/{id}.md': {
