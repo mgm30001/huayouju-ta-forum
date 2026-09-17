@@ -11,6 +11,10 @@ import markdown
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', os.urandom(24))
 
+# AI 资料获取接口（llms.txt / 主题Markdown / RSS / API，详见 ai_access.py）
+from ai_access import ai_bp
+app.register_blueprint(ai_bp)
+
 def get_db():
     """获取SQLite数据库连接"""
     conn = sqlite3.connect('forum.db', detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
